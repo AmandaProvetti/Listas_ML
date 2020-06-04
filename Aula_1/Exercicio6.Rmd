@@ -1,0 +1,75 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library("tidyverse")
+library("ggplot2")
+```
+
+# Exercício 6 #
+Considere o mesmo modelo de geração de dados do exercício anterior. O objetivo aqui é constatar o
+impacto do desvio padrão σ sobre a performance do modelo proposto pelos cientistas de dados. Para
+isso, utilize a instrução abaixo, em linguagem R, para a geração de um vetor com diversos valores de
+desvio padrão para a incerteza Gaussiana retratada pelo termo ε.
+Para que seja possível explorar e visualizar o impacto de σ - realize, pelo menos, 1000 iterações do
+algoritmo. Especificamente, para cada valor de desvio padrão avaliado, armazene e faça o cálculo
+da média aritmética sobre 1000 valores de performance expressos pelo MSE. Um dica é utilizar
+estruturas em loop (for) para a implementação das iterações.
+• 1) Construa o modelo de geração de dados incluindo as iterações para cada valor de σ.
+
+```{r}
+n = 100
+num_iter = 1000
+
+# Vetor com valores de desvio-padrÃ£o entre 0 e 20
+std_vector = seq(1, 20, length.out = 100)
+std_vector
+
+std_vector = sort(std_vector, decreasing = TRUE)
+std_vector
+
+MSE_vector = rep(0,length(std_vector))
+MSE        = rep(0,num_iter)
+
+x = c(1:100)
+x
+
+
+h_x <- 3*x + 30
+h_x
+
+
+for (k in 1:length(std_vector)){
+  
+  for (i in 1:num_iter){
+  
+    epsilon <- rnorm(n, 0, std_vector[k])
+
+    y <- h_x + epsilon
+    
+
+    h_x_estimado <- 2.8*x + 32
+
+    MSE[i] = (1/n)*sum(((y - h_x_estimado)^2))
+  }
+  MSE_vector[k] = mean(MSE)
+}
+  
+```
+
+
+2) Faça um gráfico que mostra o impacto de σ, colocado sobre o eixo x, sobre o desempenho
+indicado pelo MSE, apresentado no eixo y.
+
+```{r}
+df_vector <- data.frame(std_vector, MSE_vector)
+df_vector %>% ggplot() +
+  geom_point(aes(x = std_vector, y = MSE_vector)) +
+  labs(title = "Gráfico de impacto", x = "Desvio padrão", y = "MSE")
+```
+
+• 3) Faça uma análise: o impacto com o aumento ou redução de σ é significativo para o modelo?
+Qual a justificativa?
+Quanto maior o desvio padrão maior o MSE. Quanto mais incertezas nos dados o MSE tende a aumentar.

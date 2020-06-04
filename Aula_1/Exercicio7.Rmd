@@ -1,0 +1,71 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library("tidyverse")
+library("ggplot2")
+```
+
+# Exercício 7 #
+Considere o mesmo modelo de geração de dados do exercício anterior. Agora, nosso objetivo
+é constatar o impacto do número de amostras n sobre a performance do modelo proposto pelos
+cientistas de dados. De forma similar ao caso anterior, utilize a instrução abaixo, em linguagem R,
+para a geração de um vetor com diversos valores de desvio padrão para a incerteza Gaussiana retratada
+pelo termo ε.
+Para que seja possível explorar e visualizar o impacto de n - realize, pelo menos, 1000 iterações do
+algoritmo. Especificamente, para cada valor do número de amostras avaliado, armazene e faça o
+cálculo da média aritmética sobre 1000 valores de performance, expressos pelo MSE. Um dica é
+aproveitar as estruturas em loop (for) do exercício anterior para a implementação das iterações.
+• 1) Construa o modelo de geração de dados incluindo as iterações para cada valor de n
+```{r}
+num_iter = 1000
+
+n_vector = seq(10,100,5)
+
+MSE_vector = rep(0,length(n_vector))
+MSE        = rep(0,num_iter)
+
+
+
+for (k in 1:length(n_vector)){
+  
+  n = n_vector[k]
+  x = seq(1, 100, length.out = n)
+  
+
+  h_x <- 3*x + 30
+  
+  for (i in 1:num_iter){
+
+    std = 0.5
+    epsilon <- rnorm(n, 0, std)
+   
+    y <- h_x + epsilon
+    
+
+    h_x_estimado <- 2.8*x + 32
+    MSE[i] = (1/n)*sum(((y - h_x_estimado)^2))
+  }
+  
+  
+  MSE_vector[k] = mean(MSE)
+}
+
+```
+
+
+2) Faça um gráfico que mostra o impacto de n, colocado sobre o eixo x, sobre o desempenho
+indicado pelo MSE, apresentado no eixo y.
+
+```{r}
+df_vector <- data.frame(n_vector, MSE_vector)
+df_vector %>% ggplot() +
+  geom_point(aes(x = n_vector, y = MSE_vector)) +
+  labs(title = "Gráfico de impacto", x = "Amostras", y = "MSE")
+```
+
+3) Faça uma análise: o impacto com o aumento ou redução de n é significativo para o modelo?
+Qual a justificativa?
+Quanto maior o número de amostras, menor o MSE. O modelo se torna mais específico (e menos genérico), pois o conjunto de dados de treinamento é maior.

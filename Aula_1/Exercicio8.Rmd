@@ -1,0 +1,71 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Exercício 8 #
+Esse exercício tem o objetivo de explorar o assunto de séries temporais de forma introdutória. Para
+isso, existem alguns pacotes que podem nos auxiliar no objetivo desse exercício: capturar séries
+temporais do mercado financeiro e realizar sua visualização. Abaixo, estão listados três pacotes
+relacionados ao mercado financeiro que podem ser instalados e carregados na linguagem R.
+• install.packages("quantmod")
+• install.packages("xts")
+• install.packages("moments")
+Esses pacotes foram desenvolvidos exclusivamente para modelagem financeira quantitativa na linguagem R e permitem capturar séries temporais sobre as cotações de ações do mercado financeiro.
+Especificamente, estude e utilize a função getSymbols do pacote "quantmod" para obter séries temporais de diversas empresas presentes na bolsa de valores a partir de uma janela de tempo fornecida.
+Essa função consegue obter os dados diretamente das fontes "Yahoo Finance" (ainda ativo) e "Google
+Finance", que disponibilizam os dados gratuitamente. Utilize o nome "yahoo" para designar a fonte
+de dados na função getSymbols.
+
+```{r}
+install.packages("quantmod")
+install.packages("xts")
+install.packages("moments")
+library("tidyverse")
+library("ggplot2")
+library("quantmod")
+```
+
+• 1) Use a função getSymbols do pacote quantmod para capturar as cotações de ações da empresa
+Petrobras de janeiro/2020 até os dias atuais
+
+```{r}
+Data_Inicio = as.Date("2020-01-01") 
+Data_Fim    = as.Date("2020-04-15")
+quantmod::getSymbols("PETR4.SA", src = "yahoo", from = Data_Inicio, to = Data_Fim)
+```
+
+2) Use a função candleChart do pacote quantmod para fazer a visualização da série temporal
+das cotações fechadas da Petrobras no período considerado. Pesquise e explore essa função;
+esse resultado é chamado de gráfico de velas (amplamente conhecido e usado em análises do
+mercado financeiro).
+
+```{r}
+quantmod::candleChart(PETR4.SA$PETR4.SA.Close)
+```
+
+3) Explore a série temporal obtida da empresa, teste outros períodos de tempo e identifique o
+significado dos campos trazidos da série.
+```{r}
+Data_Inicio = as.Date("2019-01-01") 
+Data_Fim    = as.Date("2019-04-15")
+quantmod::getSymbols("PETR4.SA", src = "yahoo", from = Data_Inicio, to = Data_Fim)
+```
+
+
+```{r}
+Serie_Temporal_Petrobras = na.omit(PETR4.SA)
+quantmod::candleChart(Serie_Temporal_Petrobras$PETR4.SA.Close)
+```
+
+
+4) Use a função addBands, também do pacote quantmod, para plotar diretamente limites
+superior/inferior sobre a série temporal do item 1). Podemos parametrizar a função fornecendo:
+i) o período da média móvel e ii) a quantidade de desvio padrão relacionados com os limites
+
+```{r}
+candleChart(Serie_Temporal_Petrobras)
+addBBands(1, 20)
+```
+
+

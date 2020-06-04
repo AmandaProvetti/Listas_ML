@@ -1,0 +1,80 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+install.packages("maps")
+install.packages("mapdata")
+library("tidyverse")
+library("ggplot2")
+library("leaflet")
+library("maps")
+library("mapdata")
+```
+
+
+# Exercício 4 #
+Conceito explorado: Estatística Descritiva e Análise Exploratória de Dados
+Considere o mesmo contexto do exercício anterior e um conjunto maior de arquivos .csv, que são
+exportados pelo instrumento de medida e armazenados em um diretório.
+
+1) Com os arquivos .csv armazenados no diretório, elabore uma rotina em linguagem R para
+fazer a leitura de todos os arquivos de forma otimizada.
+
+```{r}
+files <- list.files( pattern = "*.csv")
+files
+
+all_files_df <- lapply(files,  function (f) {read.csv(f, header = FALSE, skip=12, nrows = 2, sep = ":")})
+typeof(all_files_df)
+```
+
+2) Capture os dados de geolocalização (latitude, longitude) de todos os arquivos, faça os
+processamentos e transformações necessárias, visando o armazenamento em um dataframe.
+```{r}
+gps_lat_ponto_decimal  = vector(mode="numeric", length=length(all_files_df))
+gps_long_ponto_decimal = vector(mode="numeric", length=length(all_files_df))
+
+
+# Loop for para busca das informaÃ§Ãµes de localizaÃ§Ã£o dos arquivos
+for (i in 1:length(all_files_df)){
+
+# Captura de cada dataframe contido nos arquivos do diretÃ³rio
+dataset <- data.frame(all_files_df[i])
+
+# Captura dos valores de latitude e longitude de cada dataframe
+lat_gsub = gsub("[^0-9.]", "", as.character(dataset[1,2]))
+long_gsub = gsub("[^0-9.]", "", as.character(dataset[2,2]))
+
+grau_lat_ponto         = substr(lat_gsub, start = 1, stop = 2)
+minuto_lat_ponto       = substr(lat_gsub, start = 3, stop = 9)
+gps_lat_ponto_decimal  = as.numeric(grau_lat_ponto) + as.numeric(minuto_lat_ponto)/60
+gps_lat_ponto_decimal[i]  = (-1)*gps_lat_ponto_decimal
+
+
+grau_long_ponto        = substr(long_gsub, start = 1, stop = 2)
+minuto_long_ponto      = substr(long_gsub, start = 3, stop = 9)
+gps_long_ponto_decimal = as.numeric(grau_long_ponto) + as.numeric(minuto_long_ponto)/60
+gps_long_ponto_decimal[i] = (-1)*gps_long_ponto_decimal
+}
+gps_lat_ponto_decimal
+gps_long_ponto_decimal
+```
+
+• 3) Apresente no mapa os dados de geolocalização obtidos no item anterior.
+```{r}
+# ComposiÃ§Ã£o do dataframe de latitudes e longitudes
+data_frame_lat_long = data.frame(gps_lat_ponto_decimal, gps_long_ponto_decimal)
+Pontos = c("Ponto 1", "Ponto 2", "Ponto 3", "Ponto 4", "Ponto 5", "Ponto 6", "Ponto 7", "Ponto 8", "Ponto 9", "Ponto 10")
+data_frame_lat_long = mutate(data_frame_lat_long,Pontos)
+
+# Uso do pacote leaflet para geraÃ§Ã£o do mapa interativo (google maps)
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = data_frame_lat_long$gps_long_ponto_decimal, lat = data_frame_lat_long$gps_lat_ponto_decimal,
+             popup = 'Ponto 1', label = data_frame_lat_long$Pontos,
+             clusterOptions = markerClusterOptions())
+```
+
+

@@ -1,0 +1,129 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+install.packages("leaflet")
+install.packages("maps")
+install.packages("mapdata")
+library("tidyverse")
+library("ggplot2")
+library("leaflet")
+library("maps")
+library("mapdata")
+```
+
+# Exercício 3 #
+A Figura abaixo mostra um instrumento de teste (Field Fox Keysight) que pode ser usado em laboratório ou em campo para medições de sinais de radiofrequência como os presentes em sistemas de
+comunicações sem fio. Isso significa que podemos usar esse equipamento para análise de redes sem
+fio, cobertura de operadoras de telecomunicações, além de testes com dispositivos de RF e outros
+equipamentos de telecomunicações.
+Nesse contexto, utilizamos esse equipamento para a realização de medições de intensidade de sinal no
+campus do Inatel a fim de levantar a cobertura de uma rede sem fio experimental, configurada para
+transmitir sinais na faixa de frequência de ondas milimétricas. O estudo de cobertura e propagação
+nessa faixa de frequência é um aspecto de pesquisa relevante para sistemas de comunicações da quinta
+geração de redes móveis. Nesse exercício, temos o objetivo de fazer a análise exploratória de dois
+conjuntos de dados, dataset_1 e dataset_2 exportados pelo instrumento de teste.
+
+1) Faça a importação do arquivos dataset_1 e dataset_2 exportados pelo equipamento para o
+ambiente do RStudio
+
+```{r}
+dataset1 <- read.csv("./dataset_1.csv", header=FALSE, skip=20)
+dataset2 <- read.csv("./dataset_2.csv", header=FALSE, skip=20)
+```
+
+2) Análise o resultado da importação, como as estruturas e tipos de variáveis. Quais são as
+principais informações contidas no arquivo?
+```{r}
+head(dataset1)
+head(dataset2)
+```
+
+3) Obtenha o histograma dos valores de potência de recepção coletados pelo equipamento em
+cada conjunto de dados.
+```{r}
+power_dataset1 <- na.omit(dataset1$V2)
+media  = mean(as.numeric(power_dataset1))
+desvio = sd(as.numeric(power_dataset1))
+
+
+dataset1  %>% ggplot(aes(x = V2)) +
+  geom_histogram(aes(y = ..density..), binwidth = 1) + 
+  labs(title = "Curva normal GGPLOT",
+     x = "Variável",
+     y = "Densidade") +
+  geom_density(alpha = 0.5) +
+  stat_function(fun = dnorm, color='red', size = 2,
+                args = list(mean = media, sd = desvio))
+
+```
+
+
+
+
+```{r}
+power_dataset2 <- na.omit(dataset2$V2)
+media_dt2  = mean(as.numeric(power_dataset2))
+desvio_dt2 = sd(as.numeric(power_dataset2))
+
+
+dataset2  %>% ggplot(aes(x = V2)) +
+  geom_histogram(aes(y = ..density..), binwidth = 1) + 
+  labs(title = "Curva normal GGPLOT",
+     x = "Variável",
+     y = "Densidade") +
+  geom_density(alpha = 0.5) +
+  stat_function(fun = dnorm, color='red', size = 2,
+                args = list(mean = media_dt2, sd = desvio_dt2))
+
+```
+
+
+
+
+
+4) Em qual localidade específica foram realizadas as medições de cada conjunto de dados?
+```{r}
+lat_long_data <- read.csv("./dataset_1.csv", header=FALSE, skip=12, nrows = 2, sep = ":")
+
+grau_lat_ponto_1 <- as.numeric(substr(lat_long_data[1,2], start= 2, stop=3))
+minuto_lat_ponto_1 <- as.numeric(substr(lat_long_data[2,2], start= 2, stop=3))
+grau_long_ponto_1 <- as.numeric(substr(lat_long_data[1,2], start= 5, stop=12))
+minuto_long_ponto_1 <- as.numeric(substr(lat_long_data[2,2], start= 5, stop=12))
+
+#ndf <- data.frame(grau_lat_ponto_1, minuto_lat_ponto_1, grau_long_ponto_1, minuto_long_ponto_1)
+
+gps_lat_ponto_1_decimal  = as.numeric(grau_lat_ponto_1) + as.numeric(minuto_lat_ponto_1)/60
+gps_long_ponto_1_decimal = as.numeric(grau_long_ponto_1) + as.numeric(minuto_long_ponto_1)/60
+#head(ndf)
+
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = gps_long_ponto_1_decimal, lat = gps_lat_ponto_1_decimal,
+             popup = 'ponto 1',
+             clusterOptions = markerClusterOptions())
+
+```
+
+
+```{r}
+lat_long_data_dt2 <- read.csv("./dataset_2.csv", header=FALSE, skip=12, nrows = 2, sep = ":")
+
+grau_lat_ponto_1_dt2 <- as.numeric(substr(lat_long_data_dt2[1,2], start= 2, stop=3))
+minuto_lat_ponto_1_dt2 <- as.numeric(substr(lat_long_data_dt2[2,2], start= 2, stop=3))
+grau_long_ponto_1_dt2 <- as.numeric(substr(lat_long_data_dt2[1,2], start= 5, stop=12))
+minuto_long_ponto_1_dt2 <- as.numeric(substr(lat_long_data_dt2[2,2], start= 5, stop=12))
+
+
+gps_lat_ponto_1_decimal_dt2  = as.numeric(grau_lat_ponto_1_dt2) + as.numeric(minuto_lat_ponto_1_dt2)/60
+gps_long_ponto_1_decimal_dt2 = as.numeric(grau_long_ponto_1_dt2) + as.numeric(minuto_long_ponto_1_dt2)/60
+
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = gps_long_ponto_1_decimal_dt2, lat = gps_lat_ponto_1_decimal_dt2,
+             popup = 'ponto 1',
+             clusterOptions = markerClusterOptions())
+```
+

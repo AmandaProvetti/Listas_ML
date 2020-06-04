@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library("tidyverse")
+library("ggplot2")
+```
+
+# Exercício 2 #
+Gere uma amostra com 1000 observações que segue a distribuição de probabilidade Gaussiana com
+média µ = 10 e desvio padrão σ = 5, Armazene os números aleatórios gerados no objeto r.
+
+```{r}
+r <- rnorm(1000, 10, 5)
+r
+```
+
+1) Qual é o tipo de objeto r? Quais instruções você utilizou para verificar essa informação?
+O objeto é do tipo numérico. Para verificar a informação utilizamos a função class().
+
+```{r}
+class(r)
+```
+
+2) Obtenha o histograma relacionado com o vetor r.
+
+```{r}
+hist(r, freq=FALSE)
+```
+
+3) Plote, sobre o histograma, a curva de densidade normal informando os valores de média e
+desvio padrão. Dica: no R, as funções curve e dnorm são úteis para solucionar esse ponto
+```{r}
+hist(r, freq=FALSE, xlab="Variável", ylab="Densidade",
+     main="Curva Normal")
+curve(dnorm(x,mean=10,sd=5), add = TRUE, col="darkblue", lwd=2) 
+```
+
+
+```{r}
+r %>% as.data.frame() %>% ggplot(aes(x = r)) +
+  geom_histogram(aes(y = ..density..), binwidth = 1) + 
+  labs(title = "Curva normal GGPLOT",
+     x = "Variável",
+     y = "Densidade") +
+  geom_density(alpha = 0.5) +
+  stat_function(fun = dnorm, color='red', size = 2,
+                args = list(mean = 10, sd = 5))
+```
+

@@ -1,0 +1,76 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library("tidyverse")
+library("ggplot2")
+```
+
+
+# Exercício 5 #
+Considere o seguinte modelo de geração de dados mostrado abaixo:
+y = h(x) +ε 
+Nesse modelo, h(x) = 3x+30 consiste na função hipótese verdadeira, muitas vezes desconhecida na
+prática de ML, e ε é um termo que expressa a incerteza entre os valores da função hipótese verdadeira
+e a variável de saída ou resposta y. Estatisticamente, ε é interpretado como um ruído, que nesse
+exercício segue a distribuição de probabilidade Gaussiana com média µ = 0 e desvio padrão σ = 15.
+A notação em negrito usada ocorre em função de (1.3) ser um modelo vetorial de dados.
+A variável explanatória x usada será um vetor de valores inteiros de zero (1) a cem (100). Logo, o
+modelo de dados é formado pelos vetores y, h(x) e ε, sendo cada um com dimensões (número de
+linhas e colunas) de 100×1.
+Considere que um grupo de cientistas de dados já realizaram o trabalho de modelagem e encontraram
+uma função hipótese candidata dada por:
+hˆ(x) = 2.8x+32
+
+ 1) Construa esse modelo de geração de dados. Para que seja possível a reprodução de resultados
+em função do vetor aleatório ε utilize a semente (seed) 123 em seu código.
+
+```{r}
+x = c(1:100)
+
+
+h_x <- 3*x + 30
+
+
+set.seed(123)
+
+dist_normal <- rnorm(100, 0, 15)
+
+
+y <- h_x + dist_normal
+
+```
+
+2) Faça um gráfico de dispersão da variável explanatória x com saída conhecida y.
+
+```{r}
+
+t <- data.frame(x, y)
+t %>% ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  labs(title = "Gráfico de dispersão", x = "Variável explanatória", y = "Variável de saída")
+```
+
+• 3) Obtenha o histograma relacionado com a variável de saída y.
+```{r}
+hist(y, xlab = "Variável de saída") 
+```
+
+4) A equação do MSE, mostrada abaixo, é uma métrica de desempenho relacionada com qual
+tipo de tarefa de aprendizagem de máquina?
+Regressão. Verifica a precisão dos dados, se é o modelo é genérico o suficiente ou está preciso demais.
+
+• 5) Faça a estimação do erro quadrático médio do modelo proposto pelos cientistas
+```{r}
+h_x_estimado <- 2.8*x + 32
+#h_x_estimado
+
+MSE = (1/100)*sum(((y - h_x_estimado)^2))
+MSE
+```
+
+6) Faça uma análise: o modelo proposto é plausível para explicar os dados? De quais fatores
+esse desempenho depende?
+É plausível, porem depende de outros fatores como o X, o ruído e a variância, visto que suas alterações podem variar o MSE.
