@@ -1,0 +1,159 @@
+---
+title: "Exercício 2 - Machine Learning - Regressão Linear"
+output: html_notebook
+author: "Amanda Provetti"
+---
+
+2. Exercício 2 (Modelos de Regressão Linear Simples)
+Contexto do problema: Temos o objetivo de construir um modelo preditivo de ML que seja capaz de realizar predições dos valores medianos de preços das casas em uma região suburbana de Boston, EUA. A variável
+a ser predita consiste em um valor numérico que representa o preço mediano das casas em Boston. Para cada
+uma das observações (casas), temos diversas variáveis de entrada ou características. Logo, podemos buscar a
+solução para esse problema usando modelos de regressão linear simples ou múltipla.
+Dataset: Os dados estão fornecidos na forma de tabela (.xlsx e .csv) retratado pelo dataset Boston, presente na
+biblioteca MASS do software R que apresenta os valores das casas (Median value of owner-occupied homes)
+em 506 vizinhanças da cidade de Boston. Os dados que acompanham o valor mediano dos preços das casas
+consistem em indicadores de condições socioeconômicas, ambientais, instalações educacionais e alguns outros
+fatores semelhantes. No ambiente R, o comando ?Boston fornece informações sobre cada uma das features.
+Ao todo, são 13 features e uma variável resposta, denotada como medv (preço mediano da casa), baseada em
+$1,000 dólares. De forma específica, no conjunto de variáveis explanatórias (i.e., características), temos doze
+(12) variáveis numéricas e uma (1) variável categórica, que no caso pode assumir 0 (zero) ou 1 (um). Com
+isso, a planilha de dados apresenta 506 linhas (exemplos de treinamento) e 14 colunas (features). Abaixo, estão
+colocadas cada uma das variáveis características do dataset e seu respectivo significado:
+
+
+• CRIM: per capita crime rate by town
+• ZN: proportion of residential land zoned for lots over 25,000 sq.ft.
+• INDUS: proportion of non-retail business acres per town
+• CHAS: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise)
+• NOX: nitric oxides concentration (parts per 10 million)
+• RM: average number of rooms per dwelling
+• AGE: proportion of owner-occupied units built prior to 1940
+• DIS: weighted distances to five Boston employment centres
+• RAD: index of accessibility to radial highways
+• TAX: full-value property-tax rate per 10,000
+• PTRATIO: pupil-teacher ratio by town
+• B: 1000(Bk −0.63)
+2 where Bk is the proportion of blacks by town
+• LSTAT: % lower status of the population
+• TARGET: Median value of owner-occupied homes in $1000’s
+
+Em um primeiro momento, vamos usar a variável explanatória lstat, a qual expressa a parcela (em %) da
+população de baixa renda (status) obtida em cada vizinhança dentre as 506 analisadas.
+O nosso objetivo consiste em obter um modelo de ML baseado na regressão linear simples e univariada de
+lstat e os valores medianos dos preços das casas medv. Abaixo, seguem os itens que devemos solucionar neste
+desenvolvimento, visando alcançar o objetivo deste exercício:
+
+– 1) Faça a exploração dos dados e a síntese sobre suas principais variáveis explanatórias.
+```{r}
+install.packages("ISLR")
+library(ggplot2)
+library(MASS)
+library(ISLR)
+library("tidyverse")
+```
+
+```{r}
+data = Boston
+data
+```
+'
+```{r}
+summary(data)
+```
+```{r}
+names(data)
+```
+
+```{r}
+data %>% ggplot(aes(x=lstat, y=medv)) +
+  geom_point() +
+  ggtitle("Gráfico de dispersão - lstat x medv") +
+  xlab("lstat") + 
+  ylab("medv")
+
+```
+
+2) Construa e treine o modelo preditivo de ML baseado em regressão linear simples.
+```{r}
+
+modelo_ML <- lm(medv ~ lstat, data = data)
+modelo_ML
+```
+
+
+3) Realize as predições do modelo sobre os dado de treinamento e calcule a média de seus resíduos.
+```{r}
+previsao_treinamento = predict(modelo_ML)
+previsao_treinamento <- data.frame(previsao_treinamento)
+previsao_treinamento
+```
+
+
+```{r}
+media_residuos = mean(modelo_ML$residuals)
+media_residuos
+```
+
+4) A partir do modelo de ML construído, qual seria o valor do preço de uma casa na região suburbana
+analisada de Boston, considerando que 25% das pessoas nesta localidade são classificadas na
+categoria de baixa renda?
+```{r}
+novo_dado      = data.frame(c(10, 15, 20, 25, 30, 35))
+colnames(novo_dado) <- c('lstat')
+
+predicao_teste <- predict(modelo_ML, novo_dado)
+predicao_teste <- data.frame(predicao_teste*1000)
+names(predicao_teste) <- c('Predição (dólares)')
+
+predicao_teste
+```
+
+5) Implemente o algoritmo do gradiente descendente.
+```{r}
+x = data$lstat
+y = data$medv
+num_iters     = 50000;
+learning_rate = 0.001;
+
+Algoritmo_GD <- function(X, y, theta, learning_rate, num_iters){
+  m = length(y)
+  theta  = c(0, 0)
+  alpha = learning_rate
+  for (i in 1:num_iters){
+    h      = theta[1] + theta[2]*x                   
+    Theta0 = theta[1]                                
+    Theta1 = theta[2]                                
+    Theta0 = Theta0 - alpha*(1/m)*sum((h - y))       
+    Theta1 = Theta1 - alpha*(1/m)*sum((h - y)*x)     
+    theta  = c(Theta0, Theta1)                       
+  }                         
+  theta
+}
+theta_GD <- Algoritmo_GD(x, y, theta, learning_rate, num_iters)
+theta_GD
+```
+
+6) Solucione o problema com as equações normais e faça um comparativo de resultados
+```{r}
+size_data = dim(data)
+ones_data = replicate(size_data[1],1)
+
+X = data.frame(ones_data,x)
+X = as.matrix(X)
+
+theta_solution_norm_equations = solve(t(X) %*% X) %*% (t(X) %*% y) 
+theta_0_norm_eq = theta_solution_norm_equations[1]
+theta_1_norm_eq = theta_solution_norm_equations[2]
+theta_0_norm_eq
+theta_1_norm_eq
+```
+
+7) Compare os resultados do modelo construído com os parâmetros obtidos com o algoritmo GD
+```{r}
+summary(modelo_ML)
+```
+
+```{r}
+theta_GD
+```
+
