@@ -1,0 +1,60 @@
+---
+title: "Exercicio 2 - Machine Learning - Regressão Logística"
+output: html_notebook
+author: "Amanda Provetti"
+---
+
+```{r}
+install.packages("e1071")
+library(datasets) 
+library(varhandle)
+library(tidyverse)
+library(fastDummies)
+library(caret)
+library(e1071)
+```
+Considere o desenvolvimento do modelo de classificação do Exercício Computacional 1 - obtenha a matriz de
+confusão do classificador. O ponto chave aqui é realizar a interpretação dos resultados obtidos.
+```{r}
+dataset = iris
+all_species <- data.frame(Species = iris$Species)
+binary_species <- dummy_cols(all_species, "Species", remove_selected_columns = TRUE)
+Species <- binary_species %>% select(Species_virginica)
+
+dataset <- data.frame(dataset$Sepal.Length, dataset$Sepal.Width, dataset$Petal.Length, dataset$Petal.Width, Species=Species$Species_virginica)
+cols <- c("Species")
+dataset[cols] <- lapply(dataset[cols], factor) 
+set.seed(12)
+
+indices_treinamento <- createDataPartition(dataset$Species, p = 0.9, list = FALSE)
+dados_treinamento <-dataset[indices_treinamento,]
+dados_teste <- dataset[-indices_treinamento,]
+equation <- " Species ~ ."
+equation <- as.formula(equation)
+modelo_ML_logistic <- glm(equation, data = dados_treinamento, family = 'binomial')
+```
+
+```{r}
+previsao_teste <- predict(modelo_ML_logistic, dados_teste, type="response")
+previsao_teste <- round(as.numeric(previsao_teste))
+previsao_teste <- as.factor(previsao_teste)
+
+dados_teste_fatores = as.factor(dados_teste$Species)
+previsao_teste_data <- data.frame(previsao_teste, dados_teste_fatores)
+confusionMatrix(data = previsao_teste, reference = dados_teste_fatores, positive = "1")
+```
+
+```{r}
+modelo_ML_logistic_2 <- glm(Species ~ dataset.Petal.Width + dataset.Petal.Length, data = dados_treinamento, family = 'binomial')
+```
+
+```{r}
+previsao_teste <- predict(modelo_ML_logistic_2, dados_teste, type="response")
+previsao_teste <- round(as.numeric(previsao_teste))
+previsao_teste <- as.factor(previsao_teste)
+
+dados_teste_fatores = as.factor(dados_teste$Species)
+previsao_teste_data <- data.frame(previsao_teste, dados_teste_fatores)
+confusionMatrix(data = previsao_teste, reference = dados_teste_fatores, positive = "1")
+```
+
