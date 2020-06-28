@@ -1,0 +1,71 @@
+---
+title: "Exercicio 2 - Machine Learning - Redes Neurais"
+output: html_notebook
+author: "Amanda Provetti"
+---
+
+
+```{r}
+library(readxl)
+library(caTools)
+library(neuralnet)
+library(tidyverse)
+library(ggplot2)
+```
+
+Considere o desenvolvimento da rede neural artificial do Exercício Computacional 1 - obtenha um comparativo
+de desempenho desse modelo com a regressão linear múltipla conduzida sobre os mesmos dados de treinamento.
+O ponto chave aqui é realizar a interpretação dos resultados obtidos.
+
+```{r}
+boston_table = read_excel("Boston_Tabela.xlsx")
+dados = boston_table
+minimo <- apply(dados, 2, min)
+maximo <- apply(dados, 2, max) 
+dados_normalizados <- as.data.frame(scale(dados, center = minimo, scale = maximo - minimo))
+set.seed(12)
+divisao_dados = sample.split(dados_normalizados$medv, SplitRatio = 0.70)
+dados_norm_treinamento = subset(dados_normalizados, divisao_dados == TRUE)
+dados_norm_teste       = subset(dados_normalizados, divisao_dados == FALSE)
+
+nomes_colunas <- colnames(dados_norm_treinamento)
+
+equation_model <- as.formula(paste ( "medv ~ ", paste(nomes_colunas[!nomes_colunas %in% "medv"], collapse = " + ")))
+
+modelo_RNA = neuralnet(equation_model, data = dados_norm_treinamento, hidden = c(5,3), linear.output = TRUE)
+
+RNA_pred_norm = compute(modelo_RNA, dados_norm_teste[1:13])
+max_medv = max(dados$medv) 
+min_medv = min(dados$medv) 
+RNA_pred = RNA_pred_norm$net.result*(max_medv - min_medv) + min_medv
+
+dados_teste <- (dados_norm_teste$medv)*(max(dados$medv) - min(dados$medv)) + min(dados$medv)
+MSE_RNA <- sum(((dados_teste - RNA_pred)^2) )/nrow(RNA_pred)
+df_RNA_pred <- data.frame(dados_teste, RNA_pred)
+```
+
+
+```{r}
+dfNorm <- as.data.frame(scale(dados, center = minimo, scale = maximo - minimo))
+modelo_ML <- lm(equation_model, data = dfNorm)
+ML_pred_norm <- predict(modelo_ML, dados_norm_teste[1:13]) %>% as.data.frame()
+ML_pred <-   ML_pred_norm*(max_medv - min_medv) + min_medv
+```
+
+
+```{r}
+summary(df_RNA_pred)
+```
+
+
+```{r}
+summary(ML_pred)
+```
+
+```{r}
+MSE_RNA <- sum(((dados_teste - RNA_pred)^2) )/nrow(RNA_pred)
+MSE_ML <- sum(((dados_teste - ML_pred)^2) )/nrow(ML_pred)
+MSE_RNA
+MSE_ML
+```
+
